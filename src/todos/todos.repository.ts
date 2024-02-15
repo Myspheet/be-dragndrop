@@ -13,10 +13,10 @@ export class TodoRepository {
   }
 
   async findAll(user: UserEntity): Promise<TodoEntity[]> {
-    // const { id } = user;
+    const { id } = user;
     const todos = await this.prismaService.todo.findMany({
         where: {
-            userId: 4
+            userId: id
         },
         orderBy: [
           {pos: 'asc'}
