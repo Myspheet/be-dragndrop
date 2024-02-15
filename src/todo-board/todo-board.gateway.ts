@@ -5,6 +5,8 @@ import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { UserEntity } from 'src/users/entities/user.entity';
+import { JwtService } from '@nestjs/jwt';
+import { TodoRepository } from 'src/todos/todos.repository';
 
 @WebSocketGateway({
   cors: {
@@ -13,74 +15,66 @@ import { UserEntity } from 'src/users/entities/user.entity';
 })
 
 @WebSocketGateway()
-export class TodoBoardGateway implements OnGatewayDisconnect, OnGatewayConnection {
+export class TodoBoardGateway {
   @WebSocketServer()
   server: Server;
 
-  user: UserEntity = {
-    id: 4,
-    name: "John Do",
-    email: "promise@gmail.com",
-    password: "Hello world",
-  }
+  constructor(private readonly todosService: TodosService, private jwtService: JwtService) {}
 
-  private readonly connectedClients: Map<string, Socket> = new Map();
-
-  constructor(private readonly todosService: TodosService) {}
-
-  handleDisconnect(client: any) {
-    console.log('clientid',client.id);
-
-    this.connectedClients.delete(client.id)
-    // throw new Error('Method not implemented.');
-  }
-
-  handleConnection(socket: Socket): void {
-   const clientId = socket.id;
-    this.connectedClients.set(clientId, socket);
-    console.log('connected',this.connectedClients.size);
-  }
-
-  @SubscribeMessage('message')
-  handleMessage(client: any, payload: any): string {
-    console.log(client.id);
-    return 'Hello world!';
-  }
-
-  // @UseGuards(AuthGuard())
   @SubscribeMessage('updateTodos')
   async handleUpdateTodos(client: any, payload: any) {
-    const allTodos = await this.todosService.findAll(this.user);
+    const id = this.getUserId(payload);
 
-    client.broadcast.emit("updatedTodo", allTodos);
+    if(id){
+      return this.emitUpdateTodo(id);
+    }
 
-    return allTodos;
+    return;
   }
 
   @SubscribeMessage('createdTodo')
   async handleCreateTodo(client: any, payload: any) {
-    const allTodos = await this.todosService.findAll(this.user);
+    const id = this.getUserId(payload);
 
-    this.server.emit("updatedTodo", allTodos);
+    if(id){
+      return this.emitUpdateTodo(id);
+    }
 
-    return allTodos;
+    return;
   }
 
   @SubscribeMessage('deleteTodo')
   async handleDeleteTodo(client: any, payload: any) {
-    const allTodos = await this.todosService.findAll(this.user);
+    const id = this.getUserId(payload);
+
+    if(id){
+      return this.emitUpdateTodo(id);
+    }
+
+    return;
+  }
+
+  @SubscribeMessage('todoUpdate')
+  async handleUpdateTodo(client: any, payload: any) {
+    const id = this.getUserId(payload);
+
+    if(id){
+      return this.emitUpdateTodo(id);
+    }
+
+    return [];
+  }
+
+  private async emitUpdateTodo(id) {
+    const allTodos = await this.todosService.findAll(id);
 
     this.server.emit("updatedTodo", allTodos);
 
     return allTodos;
   }
 
-  @SubscribeMessage('todoUpdate')
-  async handleUpdateTodo(client: any, payload: any) {
-    const allTodos = await this.todosService.findAll(this.user);
-
-    this.server.emit("updatedTodo", allTodos);
-
-    return allTodos;
+  private getUserId(payload): number {
+     const { id } = this.jwtService.decode(payload);
+     return id;
   }
 }

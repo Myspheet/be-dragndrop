@@ -12,11 +12,11 @@ export class TodosService {
    constructor(private readonly todoRepository: TodoRepository) {}
 
   create(createTodoDto: CreateTodoDto, user: UserEntity) {
-    return this.todoRepository.createTodo(createTodoDto, user);
+    return this.todoRepository.createTodo(createTodoDto, user.id);
   }
 
   async findAll(user: UserEntity ) {
-    return await this.todoRepository.findAll(user);
+    return await this.todoRepository.findAll(user.id);
   }
 
   findOne(id: number) {

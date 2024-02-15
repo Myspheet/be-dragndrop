@@ -17,12 +17,12 @@ import { AuthService } from './auth.service';
       defaultStrategy: 'jwt',
     }),
     JwtModule.register({
-      secret: "secret",
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: "24h" },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [JwtStrategy, PassportModule, AuthService]
+  providers: [AuthService, JwtStrategy, JwtService],
+  exports: [JwtStrategy, PassportModule, AuthService, JwtService]
 })
 export class AuthModule {}

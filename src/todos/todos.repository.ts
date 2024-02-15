@@ -12,8 +12,7 @@ export class TodoRepository {
   constructor(private readonly prismaService: PrismaService) {
   }
 
-  async findAll(user: UserEntity): Promise<TodoEntity[]> {
-    const { id } = user;
+  async findAll(id: number): Promise<TodoEntity[]> {
     const todos = await this.prismaService.todo.findMany({
         where: {
             userId: id
@@ -25,9 +24,8 @@ export class TodoRepository {
     return todos;
   }
 
-  async createTodo(createTodoDto: CreateTodoDto, user: UserEntity): Promise<TodoEntity> {
+  async createTodo(createTodoDto: CreateTodoDto, id: number): Promise<TodoEntity> {
     const { title, description, status, pos } = createTodoDto;
-    const { id } = user;
     const todo = await this.prismaService.todo.create({
         data: {
             title,
