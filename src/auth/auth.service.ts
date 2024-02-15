@@ -6,6 +6,7 @@ import { JwtPayload } from './jwt-payload.interface';
 import { AuthCredentialsDto } from './dto/auth-credential.dto';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserEntity } from 'src/users/entities/user.entity';
+import { LoginCredentialsDto } from './dto/login-credential.dto';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +20,7 @@ export class AuthService {
       }
     
       async signIn(
-        authCredentialDto: AuthCredentialsDto,
+        authCredentialDto: LoginCredentialsDto,
       ): Promise<{ accessToken: string }> {
         const { email, password } = authCredentialDto;
         const user = await this.userRepository.signIn({ email });
