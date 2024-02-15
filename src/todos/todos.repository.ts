@@ -1,5 +1,5 @@
 
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { CreateTodoDto } from './dto/create-todo.dto';
@@ -13,44 +13,58 @@ export class TodoRepository {
   }
 
   async findAll(id: number): Promise<TodoEntity[]> {
-    const todos = await this.prismaService.todo.findMany({
-        where: {
-            userId: id
-        },
-        orderBy: [
-          {pos: 'asc'}
-        ]
-    })
-    return todos;
+    try {
+      const todos = await this.prismaService.todo.findMany({
+          where: {
+              userId: id
+          },
+          orderBy: [
+            {pos: 'asc'}
+          ]
+      })
+      return todos;
+    } catch (error) {
+      throw new HttpException('There was an error', 500);
+    }
   }
 
   async createTodo(createTodoDto: CreateTodoDto, id: number): Promise<TodoEntity> {
-    const { title, description, status, pos } = createTodoDto;
-    const todo = await this.prismaService.todo.create({
-        data: {
-            title,
-            status,
-            description,
-            userId: id,
-            pos
-        }
-    });
+    try {
+      const { title, description, status, pos } = createTodoDto;
+      const todo = await this.prismaService.todo.create({
+          data: {
+              title,
+              status,
+              description,
+              userId: id,
+              pos
+          }
+      });
+  
+      return todo;
 
-    return todo;
+    } catch (error) {
+      throw new HttpException('There was an error', 500);
+    }
   }
 
   async updateTodo(updateTodoDto: UpdateTodoDto): Promise<TodoEntity> {
-    const { id, ...todoData} = updateTodoDto;
-    const todo = await this.prismaService.todo.update({
-      where: {
-        id
-      },
-      data: {
-        ...todoData
-      },
-    });
-
-    return todo;
+    try {
+      const { id, ...todoData} = updateTodoDto;
+      const todo = await this.prismaService.todo.update({
+        where: {
+          id
+        },
+        data: {
+          ...todoData
+        },
+      });
+  
+      return todo;
+      
+    } catch (error) {
+      throw new HttpException('There was an error', 500);
+    }
   }
 
   async delete(id): Promise<TodoEntity> {

@@ -43,6 +43,7 @@ export class TodoBoardGateway {
   async handleDeleteTodo(client: any, payload: any) {
     const id = this.getUserId(payload);
 
+    console.log(id);
     if(id){
       return this.emitUpdateTodo(id);
     }
