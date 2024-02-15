@@ -1,10 +1,6 @@
 import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { TodosService } from 'src/todos/todos.service';
 import { Socket, Server } from 'socket.io';
-import { UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { GetUser } from 'src/auth/get-user.decorator';
-import { UserEntity } from 'src/users/entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { TodoRepository } from 'src/todos/todos.repository';
 
@@ -19,7 +15,7 @@ export class TodoBoardGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly todosService: TodosService, private jwtService: JwtService) {}
+  constructor(private readonly todoRepository: TodoRepository, private jwtService: JwtService) {}
 
   @SubscribeMessage('updateTodos')
   async handleUpdateTodos(client: any, payload: any) {
@@ -66,7 +62,7 @@ export class TodoBoardGateway {
   }
 
   private async emitUpdateTodo(id) {
-    const allTodos = await this.todosService.findAll(id);
+    const allTodos = await this.todoRepository.findAll(id);
 
     this.server.emit("updatedTodo", allTodos);
 
