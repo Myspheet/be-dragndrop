@@ -48,26 +48,30 @@ export class TodoRepository {
     }
   }
 
-  async updateTodo(updateTodoDto: UpdateTodoDto): Promise<TodoEntity> {
+  async updateTodo(updateTodoDto: UpdateTodoDto, user: UserEntity): Promise<TodoEntity> {
     try {
       const { id, ...todoData} = updateTodoDto;
       const todo = await this.prismaService.todo.update({
         where: {
-          id
+          id,
+          userId: user.id
         },
         data: {
           ...todoData
         },
       });
-  
+
       return todo;
-      
     } catch (error) {
-      throw new HttpException('There was an error', 500);
+      throw new HttpException('Not Found', 404);
     }
   }
 
-  async delete(id): Promise<TodoEntity> {
-    return await this.prismaService.todo.delete({ where: { id } });
+  async delete(id, user): Promise<TodoEntity> {
+    try {
+      return await this.prismaService.todo.delete({ where: { id, userId: user.id } });
+    } catch (error) {
+      throw new HttpException('Not Found', 404);
+    }
   }
 }

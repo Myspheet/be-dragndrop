@@ -28,12 +28,12 @@ export class TodosController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTodoDto) {
-    return this.todosService.update(updateTodoDto, +id);
+  update(@Param('id') id: string, @Body() updateTodoDto, @GetUser() user: UserEntity) {
+    return this.todosService.update(updateTodoDto, user, +id );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.todosService.remove(+id);
+  remove(@Param('id') id: string, @GetUser() user: UserEntity) {
+    return this.todosService.remove(+id, user);
   }
 }

@@ -23,12 +23,12 @@ export class TodosService {
     return `This action returns a #${id} todo`;
   }
 
-  async update(updateTodoDto: UpdateTodoDto, id?: number) {
-    const todo = await this.todoRepository.updateTodo({id, ...updateTodoDto});
+  async update(updateTodoDto: UpdateTodoDto, user, id?: number) {
+    const todo = await this.todoRepository.updateTodo({id, ...updateTodoDto}, user);
     return todo;
   }
 
-  remove(id: number) {
-    return this.todoRepository.delete(id);
+  remove(id: number, user: UserEntity) {
+    return this.todoRepository.delete(id, user);
   }
 }
