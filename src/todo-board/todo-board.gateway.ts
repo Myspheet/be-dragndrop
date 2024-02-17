@@ -11,11 +11,36 @@ import { TodoRepository } from 'src/todos/todos.repository';
 })
 
 @WebSocketGateway()
-export class TodoBoardGateway {
+export class TodoBoardGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
+  private readonly connectedClients: Map<number, string[]> = new Map();
+
   constructor(private readonly todoRepository: TodoRepository, private jwtService: JwtService) {}
+
+  handleConnection(client: any, ...args: any[]) {
+    const clientId = client.id;
+    const userId = this.getUserId(client.handshake?.auth?.userToken);
+    client.join(`${userId}`);
+
+    // if(userId) {
+    //   const userSockets = this.connectedClients.get(userId) || [];
+
+    //   if( userSockets.length == 0 && !(clientId in userSockets)) {
+    //     userSockets.push(clientId);
+    //     this.connectedClients.set(userId, userSockets);
+    //   }
+    // }
+
+    // console.log(this.connectedClients);
+  }
+
+  handleDisconnect(client: any) {
+    const userId = this.getUserId(client.handshake?.auth?.userToken);
+
+    client.leave(`${userId}`);
+  }
 
   @SubscribeMessage('updateTodos')
   async handleUpdateTodos(client: any, payload: any) {
@@ -64,14 +89,15 @@ export class TodoBoardGateway {
 
   private async emitUpdateTodo(id) {
     const allTodos = await this.todoRepository.findAll(id);
+    const userSockets = this.connectedClients.get(id);
 
-    this.server.emit("updatedTodo", allTodos);
+    this.server.to(`${id}`).emit("updatedTodo", allTodos);
 
     return allTodos;
   }
 
   private getUserId(payload): number {
-     const { id } = this.jwtService.decode(payload);
+     const { id  } = this.jwtService.decode(payload) || {};
      return id;
   }
 }
